@@ -1,11 +1,17 @@
 from fastapi import FastAPI
-import uvicorn
+from pydantic import BaseModel
+from src.analyzer import parse_log, analyze
 
-app = FastAPI()
+app = FastAPI(title="Log Analyzer API")
+
+class LogRequest(BaseModel):
+    log_text: str
+
+@app.post("/analyze")
+def analyze_logs(req: LogRequest):
+    entries = parse_log(req.log_text)
+    return analyze(entries)
 
 @app.get("/health")
-def health_check():
-    return {"status": "healthy", "service": "active"}
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+def health():
+    return {"status": "ok"}
