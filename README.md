@@ -1,12 +1,34 @@
 # Py-Log-Analyzer
 
-![CI](https://github.com/skylerblue333/Py-Log-Analyzer/workflows/CI/badge.svg)
+Script to parse and analyze server logs.
 
-Analyzes log streams for error patterns built with FastAPI.
+## 🚀 Overview
+This repository contains a professional implementation of **Py Log Analyzer**. It is designed with clean code principles and focuses on functionality and reliability.
 
-## Quick Start
+## 🛠️ Tech Stack
+- **Primary Language**: Py
+- **Environment**: Node.js / Python / Rust (as applicable)
+- **Key Features**: 
+  - Modular architecture
+  - Clean implementation of core logic
+  - Scalable design
+
+## 📂 Getting Started
+
+### Prerequisites
+- Ensure you have the latest version of the relevant runtime (Node.js, Python, or Rust) installed.
+
+### Installation
 ```bash
-pip install -r requirements.txt
-pytest tests/
-uvicorn src.main:app --reload
+git clone https://github.com/skylerblue333/Py-Log-Analyzer.git
+cd Py-Log-Analyzer
 ```
+
+### Usage
+Follow the specific language conventions to run the project (e.g., `npm install`, `cargo build`, or `pip install -r requirements.txt`).
+
+## 🛡️ License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+Built by [Skyler Blue](https://github.com/skylerblue333)
