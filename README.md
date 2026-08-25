@@ -1,44 +1,63 @@
-<!-- PORTFOLIO PROJECT PROFILE: maintained by the repository owner -->
+# Sky Log Triage — Python Engineering Beta
 
-## Project profile and code-audit snapshot
+Sky Log Triage is a focused FastAPI service for analyzing bounded batches of structured log entries and returning deterministic severity and source summaries.
 
-**What this is:** **Py-Log-Analyzer** is a public repository described as: “Script to parse and analyze server logs. #SkyCoin4444 #AI #Blockchain #DevOps #Innovation” Its dominant language signals are **Python (4 files)**.
+## Status
 
-**Why it has value:** Its value is best understood through the implementation evidence currently present in the repository: **18 tracked files** were observed in the shallow audit, with the source structure and existing documentation providing the project’s specific context. This README does not treat a prototype, experiment, or archive as a production system without supporting evidence.
+**Engineering beta.** The service validates structured input, caps each request at 1,000 log entries, limits message/source sizes, provides liveness/readiness endpoints, has automated tests, dependency auditing, and non-root container verification.
 
-**Implementation evidence:** 2 test-related file(s) detected; 2 dependency or package manifest(s) detected; 2 build/CI/infrastructure signal(s) detected; and 3 documentation or governance file(s) detected. Test filenames observed include `tests/__init__.py`, `tests/test_main.py`. Dependency or package files include `package.json`, `requirements.txt`. Build, CI, or infrastructure signals include `Dockerfile`, `.github/workflows/ci.yml`.
+It does **not** claim log collection agents, durable log storage, SIEM correlation, anomaly-detection ML, alert delivery, tenant isolation, HA, or production deployment.
 
-**Current status:** The repository is tracked on the `main` branch. The existing source tree, configuration, tests, workflows, and documentation remain authoritative for supported behavior and maturity. A code audit is not a production-readiness certification, and the presence of a test or workflow file does not establish that all checks pass.
+## API
 
-**Relationship to the wider portfolio:** This repository is one focused component of the broader Skyler Blue Spillers portfolio across AI, software engineering, cloud and DevOps, cybersecurity, blockchain, finance, education, social systems, and creative work. It may provide a service boundary, implementation pattern, experiment, archive, or reusable idea for related repositories. Treat repositories as technical dependencies only where documented interfaces and verified project requirements support that relationship.
+- `GET /healthz` — process liveness.
+- `GET /readyz` — current request-capacity contract.
+- `POST /v1/analyze` — analyze a JSON object with a `logs` array.
 
-**Quality and security note:** No obvious secret-like pattern was detected by the limited static scan; this is not a substitute for a security audit. No TODO/FIXME marker was detected in the scanned text files.
+Supported levels are `DEBUG`, `INFO`, `WARNING`, `ERROR`, and `CRITICAL`. `ERROR` and `CRITICAL` are counted as severe.
 
----
+Example:
 
-# Py Log Analyzer
+```bash
+curl -s -X POST http://127.0.0.1:8000/v1/analyze \
+  -H 'content-type: application/json' \
+  -d '{"logs":[{"level":"INFO","message":"started","source":"api"},{"level":"ERROR","message":"failed","source":"worker"}]}'
+```
 
-![GitHub stars](https://img.shields.io/github/stars/skylerblue333/Py-Log-Analyzer?style=flat-square)
-![GitHub license](https://img.shields.io/github/license/skylerblue333/Py-Log-Analyzer?style=flat-square)
+## Run locally
 
-## 🌟 Overview
-**Py-Log-Analyzer** is a professional-grade project within the **SkyCoin4444** ecosystem. It focuses on delivering high-value solutions in the domain of **Python**.
+```bash
+python -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+uvicorn src.main:app --host 127.0.0.1 --port 8000
+```
 
-## 🚀 Key Features
-- **Scalable Architecture**: Designed for enterprise-level growth and performance.
-- **Modern Standards**: Implements best practices for clean code and maintainability.
-- **Robust Integration**: Built to work seamlessly within modern cloud-native environments.
+## Verify
 
-## 🛠️ Technology Stack
-- **Primary Domain**: Python
-- **Ecosystem**: SkyCoin4444 Digital Platform
+```bash
+python -m compileall -q src tests
+ruff check src tests
+pytest -q
+pip-audit -r requirements.txt
+docker build -t sky-log-triage .
+docker run --rm --entrypoint=id sky-log-triage -u
+```
 
-## 📂 Structure
-The project is organized into a modular structure to ensure clarity and ease of development.
+The container is expected to run as UID `10001`. CI also starts the image and verifies `/healthz`.
 
-## 👨‍💻 Author
-**Skyler Blue Spillers**
-*Professional Chess Player & Software Engineer*
+## Architecture
 
----
-*Powered by SkyCoin4444*
+`src/main.py` is the canonical service. Validation is performed at the HTTP boundary through Pydantic models. Analysis is intentionally deterministic and in-memory: it summarizes the submitted batch and retains no logs after the request completes.
+
+## SKYCOIN4444 integration
+
+Use this component as a stateless triage boundary for batches already collected by ecosystem services. Do not send secrets or unrestricted raw production logs without a separate redaction and transport policy. Durable observability should remain in the platform's logging/telemetry infrastructure rather than being implied by this service.
+
+## Security and operational boundaries
+
+The service does not provide authentication, authorization, rate limiting, log redaction, encrypted storage, durable audit retention, or tenant isolation. Put appropriate gateway controls in front of it before use outside a trusted development environment.
+
+## License
+
+See `LICENSE`.
